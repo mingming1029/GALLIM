@@ -1,7 +1,9 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { DEMO_CASES, KORAS_ITEMS } from "@/lib/koras";
+import { matchCount } from "@/lib/case-rules";
+import { findCase } from "@/lib/cases";
+import { KORAS_ITEMS } from "@/lib/koras";
 import { REASON_CATEGORIES, differsFromTool } from "@/lib/judgment";
 import { getDataServerSnapshot, getDataSnapshot, subscribeData } from "@/lib/remote";
 
@@ -24,9 +26,15 @@ export function AnalysisView() {
   const rows = data.judgments;
   const differed = rows.filter((row) => differsFromTool(row.finalDecision));
   const ratio = rows.length ? Math.round((differed.length / rows.length) * 100) : 0;
+  const rates = rows.flatMap((row) => {
+    const demo = findCase(row.caseId);
+    if (!demo) return [];
+    return [matchCount(row.itemScores, demo.aiScores) / KORAS_ITEMS.length];
+  });
+  const average = rates.length ? Math.round((rates.reduce((sum, rate) => sum + rate, 0) / rates.length) * 100) : null;
   const counts = KORAS_ITEMS.map((question) => {
     const count = rows.filter((row) => {
-      const demo = DEMO_CASES.find((item) => item.id === row.caseId);
+      const demo = findCase(row.caseId);
       if (!demo) return false;
       return row.itemScores[question.no] !== demo.aiScores[question.no];
     }).length;
@@ -42,7 +50,7 @@ export function AnalysisView() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="grid grid-cols-2 gap-2.5">
+      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
         <div className="min-w-0 rounded-xl border border-line bg-surface px-3.5 py-3">
           <b className="block text-2xl leading-tight font-bold tabular-nums">{rows.length}</b>
           <span className="text-xs leading-5 text-muted">내가 기록한 판단</span>
@@ -51,11 +59,15 @@ export function AnalysisView() {
           <b className="block text-2xl leading-tight font-bold tabular-nums">{ratio}%</b>
           <span className="text-xs leading-5 text-muted">도구 수준과 다르게 판단한 비율</span>
         </div>
+        <div className="col-span-2 min-w-0 rounded-xl border border-line bg-surface px-3.5 py-3 sm:col-span-1">
+          <b className="block text-2xl leading-tight font-bold tabular-nums">{average === null ? "–" : `${average}%`}</b>
+          <span className="text-xs leading-5 text-muted">평균 일치율 · 이 브라우저</span>
+        </div>
       </div>
       <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
       <section className="flex min-w-0 flex-col gap-3.5 rounded-[14px] border border-line bg-surface p-5">
         <h2 className="text-lg font-semibold">문항별 차이</h2>
-        <p className="text-sm leading-6 text-muted">AI 채점과 내 채점이 달랐던 횟수입니다.</p>
+        <p className="text-sm leading-6 text-muted">기준 채점과 내 채점이 달랐던 횟수입니다.</p>
         <div className="flex flex-col gap-2">
           {counts.map(({ question, count }) => (
             <div
@@ -76,11 +88,10 @@ export function AnalysisView() {
           ))}
         </div>
         <p className="border-l-[3px] border-accent pl-3 text-sm leading-6">
-          {rows.length < 3
-            ? "기록이 적어서 경향을 말하기 어렵다."
-            : top.count > 0
-              ? `문항 ${top.question.no} ${top.question.name}에서 가장 많이 갈렸습니다 (${top.count}건).`
-              : "AI 채점과 다른 문항이 아직 없습니다."}
+          {rows.length < 3 ? "기록이 적어서 경향을 말하기 어렵다. " : ""}
+          {top.count > 0
+            ? `가장 많이 다른 문항은 ${top.question.no}. ${top.question.name}입니다 (${top.count}건).`
+            : "기준 채점과 다른 문항이 아직 없습니다."}
         </p>
       </section>
       <section className="flex min-w-0 flex-col gap-3.5 rounded-[14px] border border-line bg-surface p-5">

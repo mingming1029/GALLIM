@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
-import { DEMO_CASES, type DemoCase } from "@/lib/koras";
-import { VIRTUAL_CASE } from "@/lib/copy";
+import { addGenerated, getCaseList, getCaseListServer, isGeneratedCase, subscribeCases } from "@/lib/cases";
+import type { DemoCase } from "@/lib/koras";
+import { EXAMPLE_MARK, GENERATED_MARK, VIRTUAL_CASE } from "@/lib/copy";
 import { differsFromTool } from "@/lib/judgment";
 import { getDataServerSnapshot, getDataSnapshot, subscribeData } from "@/lib/remote";
 
@@ -15,43 +16,12 @@ const FILTERS: { key: Filter; label: string }[] = [
   { key: "done", label: "기록 완료" },
 ];
 
-let order: DemoCase[] | null = null;
-const listeners = new Set<() => void>();
-
-function shuffle(items: readonly DemoCase[]) {
-  const next = items.slice();
-  for (let i = next.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const current = next[i];
-    next[i] = next[j];
-    next[j] = current;
-  }
-  return next;
-}
-
-function subscribeOrder(listener: () => void) {
-  listeners.add(listener);
-  return () => {
-    listeners.delete(listener);
-    if (listeners.size === 0) order = null;
-  };
-}
-
-function getOrder() {
-  if (!order) order = shuffle(DEMO_CASES);
-  return order;
-}
-
-function getServerOrder(): DemoCase[] | null {
-  return null;
-}
-
 function line(item: DemoCase, label: string) {
   return item.record.find((row) => row.label === label)?.value ?? item.record[0]?.value ?? "";
 }
 
 export function CaseList() {
-  const cases = useSyncExternalStore(subscribeOrder, getOrder, getServerOrder);
+  const cases = useSyncExternalStore(subscribeCases, getCaseList, getCaseListServer);
   const data = useSyncExternalStore(subscribeData, getDataSnapshot, getDataServerSnapshot);
   const [filter, setFilter] = useState<Filter>("all");
 
@@ -90,25 +60,49 @@ export function CaseList() {
           </div>
         ))}
       </div>
-      <div className="flex flex-wrap gap-2" role="group" aria-label="사례 필터">
-        {FILTERS.map((item) => {
-          const pressed = filter === item.key;
-          return (
-            <button
-              key={item.key}
-              type="button"
-              aria-pressed={pressed}
-              onClick={() => setFilter(item.key)}
-              className={
-                pressed
-                  ? "rounded-full border border-ink bg-ink px-3.5 py-1.5 text-sm font-medium text-bg"
-                  : "rounded-full border border-line bg-transparent px-3.5 py-1.5 text-sm font-medium text-ink hover:bg-accent-soft"
-              }
-            >
-              {item.label}
-            </button>
-          );
-        })}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap gap-2" role="group" aria-label="사례 필터">
+          {FILTERS.map((item) => {
+            const pressed = filter === item.key;
+            return (
+              <button
+                key={item.key}
+                type="button"
+                aria-pressed={pressed}
+                onClick={() => setFilter(item.key)}
+                className={
+                  pressed
+                    ? "rounded-full border border-ink bg-ink px-3.5 py-1.5 text-sm font-medium text-bg"
+                    : "rounded-full border border-line bg-transparent px-3.5 py-1.5 text-sm font-medium text-ink hover:bg-accent-soft"
+                }
+              >
+                {item.label}
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              addGenerated(1);
+              setFilter("all");
+            }}
+            className="rounded-[10px] bg-accent px-3.5 py-1.5 text-sm font-bold text-on-accent"
+          >
+            새 사례 1개 생성
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              addGenerated(5);
+              setFilter("all");
+            }}
+            className="rounded-[10px] border border-line bg-surface px-3.5 py-1.5 text-sm font-bold"
+          >
+            새 사례 5개 생성
+          </button>
+        </div>
       </div>
       {visible.length ? (
         <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
@@ -118,10 +112,10 @@ export function CaseList() {
               href={`/cases/${item.id}`}
               className="flex min-w-0 flex-col gap-2 rounded-[14px] border border-line bg-surface p-4 hover:border-accent"
             >
-              <div className="flex items-center justify-between gap-2">
+              <div className="flex min-w-0 flex-col gap-1">
                 <b className="text-base">사례 {item.id}</b>
-                <span className="rounded border border-line px-1.5 text-[11px] font-bold text-muted">
-                  가상
+                <span className="text-[11px] leading-4 font-bold text-muted">
+                  {isGeneratedCase(item.id) ? GENERATED_MARK : EXAMPLE_MARK}
                 </span>
               </div>
               <p className="text-sm text-muted">{line(item, "나이·학력·혼인")}</p>

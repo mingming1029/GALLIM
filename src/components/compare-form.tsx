@@ -1,8 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { addGenerated } from "@/lib/cases";
 import { LevelBadge } from "@/components/level-badge";
+import { REFERENCE_NOTE } from "@/lib/copy";
+import { matchCount } from "@/lib/case-rules";
 import {
   KORAS_ITEMS,
   levelOf,
@@ -31,15 +35,18 @@ export function CompareForm({
 }) {
   const myTotal = totalOf(scores);
   const myLevel = levelOf(myTotal);
-  const aiTotal = totalOf(item.aiScores);
-  const aiLevel = levelOf(aiTotal);
-  const levelsDiffer = myLevel !== aiLevel;
+  const referenceTotal = totalOf(item.aiScores);
+  const referenceLevel = levelOf(referenceTotal);
+  const levelsDiffer = myLevel !== referenceLevel;
+  const matched = matchCount(scores, item.aiScores);
+  const matchRate = Math.round((matched / KORAS_ITEMS.length) * 100);
   const [decision, setDecision] = useState<FinalDecision | null>(null);
   const [category, setCategory] = useState("");
   const [text, setText] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
+  const router = useRouter();
   const differed = decision !== null && differsFromTool(decision);
   const canSave = decision !== null && (!differed || category !== "");
 
@@ -53,8 +60,8 @@ export function CompareForm({
       itemScores: scores,
       myTotal,
       myLevel,
-      aiTotal,
-      aiLevel,
+      aiTotal: referenceTotal,
+      aiLevel: referenceLevel,
       finalDecision: decision,
       reasonCategory: differed ? category : "",
       reasonText: text.trim(),
@@ -71,8 +78,9 @@ export function CompareForm({
     <div className="flex flex-col gap-5">
       <section className="flex flex-col gap-3 rounded-[14px] border border-line bg-surface p-5">
         <h2 className="text-lg font-semibold">채점 비교</h2>
-        <p className="text-sm leading-6 text-muted">
-          오른쪽은 사전 생성된 AI 채점입니다. 지금 계산한 값이 아닙니다.
+        <p className="text-sm leading-6 text-muted">{REFERENCE_NOTE}</p>
+        <p className="text-sm font-bold tabular-nums">
+          17문항 중 {matched}개 일치 · 일치율 {matchRate}%
         </p>
         <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
           <div
@@ -88,24 +96,24 @@ export function CompareForm({
           <div
             className={`min-w-0 rounded-xl border px-3.5 py-3 ${levelsDiffer ? "border-accent bg-accent-soft" : "border-line"}`}
           >
-            <span className="text-xs text-muted">AI 합계 · 사전 생성된 AI 채점</span>
+            <span className="text-xs text-muted">기준 합계</span>
             <p className="mt-1 flex flex-wrap items-baseline gap-2">
-              <b className="text-4xl leading-none font-bold tabular-nums">{aiTotal}</b>
+              <b className="text-4xl leading-none font-bold tabular-nums">{referenceTotal}</b>
               <span className="text-sm text-muted">/ 30</span>
-              <LevelBadge level={aiLevel} />
+              <LevelBadge level={referenceLevel} />
             </p>
           </div>
         </div>
         {levelsDiffer ? (
-          <p className="text-sm font-bold text-accent">내 수준과 AI 수준이 다릅니다.</p>
+          <p className="text-sm font-bold text-accent">내 수준과 기준 수준이 다릅니다.</p>
         ) : (
-          <p className="text-sm text-muted">내 수준과 AI 수준이 같습니다.</p>
+          <p className="text-sm text-muted">내 수준과 기준 수준이 같습니다.</p>
         )}
         <ul className="flex flex-col gap-2">
           {KORAS_ITEMS.map((question) => {
             const mine = scores[question.no];
-            const ai = item.aiScores[question.no];
-            const different = mine !== ai;
+            const reference = item.aiScores[question.no];
+            const different = mine !== reference;
             const note = item.aiNotes[question.no];
             return (
               <li
@@ -116,8 +124,8 @@ export function CompareForm({
                   {question.no}. {question.name}
                 </p>
                 <p>내 채점: {optionLabel(question, mine)} ({mine})</p>
-                <p>AI 채점: {optionLabel(question, ai)} ({ai})</p>
-                {note ? <p className="leading-6 text-muted">AI 근거: {note}</p> : null}
+                <p>기준 채점: {optionLabel(question, reference)} ({reference})</p>
+                {note ? <p className="leading-6 text-muted">해설: {note}</p> : null}
               </li>
             );
           })}
@@ -146,6 +154,16 @@ export function CompareForm({
               >
                 분석 보기
               </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  const [created] = addGenerated(1);
+                  router.push(`/cases/${created.id}`);
+                }}
+                className="rounded-[10px] border border-line px-4 py-2 text-sm font-bold"
+              >
+                새 사례 이어서
+              </button>
               <Link
                 href="/"
                 className="rounded-[10px] border border-line px-4 py-2 text-sm font-bold"

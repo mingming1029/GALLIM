@@ -1,11 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { DEMO_CASES } from "@/lib/koras";
-import { VIRTUAL_CASE } from "@/lib/copy";
+import { isGeneratedCase, useCaseRecord } from "@/lib/cases";
+import { EXAMPLE_MARK, GENERATED_MARK, VIRTUAL_CASE } from "@/lib/copy";
 
 export function CaseDetail({ caseId }: { caseId: string }) {
-  const item = DEMO_CASES.find((entry) => entry.id === caseId) ?? null;
+  const item = useCaseRecord(caseId);
+
+  if (item === undefined) {
+    return <p className="px-4 py-6 text-sm text-muted">사례를 불러오는 중입니다.</p>;
+  }
 
   if (!item) {
     return (
@@ -26,7 +30,7 @@ export function CaseDetail({ caseId }: { caseId: string }) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex min-w-0 flex-col gap-2">
           <span className="self-start rounded-full bg-accent-soft px-2.5 py-0.5 text-xs font-bold text-accent">
-            가상 사례
+            {isGeneratedCase(item.id) ? GENERATED_MARK : EXAMPLE_MARK}
           </span>
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">사례 {item.id}</h1>
           <p className="text-sm leading-6 text-muted">{VIRTUAL_CASE}</p>

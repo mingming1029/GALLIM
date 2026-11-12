@@ -68,8 +68,8 @@ export type DemoCase = {
   id: string;
   record: { label: string; value: string }[]; // 사건기록 요약(가상)
   fieldMemo: { tone: "긍정" | "부정" | "중립"; text: string }; // 도구에 없는 현장 정보(가상)
-  aiScores: Record<number, number>; // AI 채점(사전 생성)
-  aiNotes: Record<number, string>; // 해석이 필요한 문항에 대한 AI의 근거
+  aiScores: Record<number, number>; // 기준 채점(매뉴얼에 따라 작성, 검수 전 초안)
+  aiNotes: Record<number, string>; // 해설
 };
 
 export const DEMO_CASES: DemoCase[] = [

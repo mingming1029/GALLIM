@@ -4,12 +4,17 @@ import Link from "next/link";
 import { useState } from "react";
 import { CompareForm } from "@/components/compare-form";
 import { LevelBadge } from "@/components/level-badge";
-import { DEMO_CASES, KORAS_ITEMS, MAX_SCORE, levelOf, totalOf } from "@/lib/koras";
+import { KORAS_ITEMS, MAX_SCORE, levelOf, totalOf } from "@/lib/koras";
+import { useCaseRecord } from "@/lib/cases";
 
 export function ScoreForm({ caseId }: { caseId: string }) {
-  const item = DEMO_CASES.find((entry) => entry.id === caseId) ?? null;
+  const item = useCaseRecord(caseId);
   const [scores, setScores] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(false);
+
+  if (item === undefined) {
+    return <p className="px-4 py-6 text-sm text-muted">사례를 불러오는 중입니다.</p>;
+  }
 
   if (!item) {
     return (

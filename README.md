@@ -24,7 +24,7 @@ npm.cmd run dev
 
 - `/` 가상 사례 목록. 들어올 때마다 순서가 바뀝니다
 - `/cases/[id]` 사건기록
-- `/cases/[id]/record` 17문항 채점, AI 채점과 비교, 최종 판단
+- `/cases/[id]/record` 17문항 채점, 기준 채점과 비교, 최종 판단
 - `/analysis` 갈림 분석
 - `/about` 연습 범위, 출처, 한계, 데이터 처리
 
