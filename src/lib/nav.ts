@@ -1,7 +1,6 @@
 export const NAV_LINKS = [
   { href: "/", label: "사례 목록" },
   { href: "/analysis", label: "갈림 분석" },
-  { href: "/add", label: "사례 추가" },
   { href: "/about", label: "소개" },
 ] as const;
 

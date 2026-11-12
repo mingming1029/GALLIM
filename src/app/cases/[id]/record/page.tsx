@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { RecordForm } from "@/components/record-form";
+import { ScoreForm } from "@/components/score-form";
 
-export const metadata: Metadata = { title: "판단 기록" };
+export const metadata: Metadata = { title: "채점" };
 
 function Loading() {
   return (
@@ -14,7 +14,7 @@ function Loading() {
 
 async function LoadedRecord({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return <RecordForm caseId={id} />;
+  return <ScoreForm caseId={id} />;
 }
 
 export default function RecordPage({

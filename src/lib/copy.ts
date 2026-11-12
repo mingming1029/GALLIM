@@ -1,6 +1,9 @@
 export const APP_NAME = "갈림";
 export const PROTOTYPE_LABEL = "시제품";
-export const TAGLINE = "도구와 판단이 갈리는 곳을 기록합니다";
+export const TAGLINE = "재범 위험성 평가를 연습합니다";
 
 export const DISCLAIMER =
-  "가상 데이터로 만든 시제품입니다. 모든 사례는 무작위로 만들었으며, 실제 평가 도구·실제 사건과 관계가 없습니다. 현장에서 검증하지 않았습니다.";
+  "가상 사례만 쓰는 평가 연습용 시제품입니다. 실제 대상자의 판단에 쓰는 도구가 아닙니다.";
+
+export const VIRTUAL_CASE =
+  "모든 사례는 가상입니다. 실제 사건·대상자와 무관합니다.";

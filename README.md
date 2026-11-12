@@ -1,6 +1,6 @@
 # 갈림
 
-보호관찰 현장의 위험성 평가 도구 결과와 담당자 판단이 갈릴 때, 그 이유를 한 줄 남기는 시제품입니다. 사례는 모두 가상 데이터입니다. 실제 평가 도구·실제 사건과 관계가 없고, 현장에서 검증하지 않았습니다.
+KORAS-G 문항으로 재범 위험성 평가를 연습하는 시제품입니다. 사례는 모두 가상입니다. 실제 대상자의 판단에 쓰는 도구가 아닙니다.
 
 ## 실행
 
@@ -22,16 +22,15 @@ npm.cmd run dev
 
 ## 화면
 
-- `/` 사례 목록. 통계, 필터, 무작위 사례 생성
-- `/cases/[id]` 사례 상세와 판단 이력
-- `/cases/[id]/record` 판단 기록. 도구 권고와 다를 때만 이유를 받습니다
+- `/` 가상 사례 목록. 들어올 때마다 순서가 바뀝니다
+- `/cases/[id]` 사건기록
+- `/cases/[id]/record` 17문항 채점, AI 채점과 비교, 최종 판단
 - `/analysis` 갈림 분석
-- `/add` 항목을 골라 사례를 직접 추가. 점수는 선택에 따라 바로 계산됩니다
-- `/about` 문제의식, 아이디어, 한계, 데이터 처리
+- `/about` 연습 범위, 출처, 한계, 데이터 처리
 
 ## Supabase
 
-앱은 시작할 때 익명으로 한 번 로그인합니다. 각 방문자는 자기 사례만 넣고 읽고, 예시 사례와 예시 기록은 모두 읽습니다. secret 키와 service role 키는 쓰지 않습니다.
+앱은 시작할 때 익명으로 한 번 로그인합니다. 판단 기록은 그 방문자만 읽고 씁니다. 사례 본문은 데이터베이스에 없습니다. secret 키와 service role 키는 쓰지 않습니다.
 
 1. https://supabase.com/dashboard 에서 프로젝트를 만듭니다. 데이터베이스 비밀번호를 정하고, 프로젝트가 준비될 때까지 기다립니다.
 2. 왼쪽 **Authentication**을 연 다음 **Sign In / Providers**로 갑니다. **Anonymous**를 켜고 저장합니다.
@@ -43,9 +42,8 @@ NEXT_PUBLIC_SUPABASE_URL=https://프로젝트.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_...
 ```
 
-5. 왼쪽 **SQL Editor**에서 **New query**를 누르고 `supabase/schema.sql` 내용 전부를 붙여 넣은 뒤 **Run**을 누릅니다.
-6. 같은 SQL Editor에서 새 쿼리를 열고 `supabase/seed.sql`을 붙여 넣어 **Run**을 한 번 누릅니다. 예시 사례 10개와 기록 7건이 들어갑니다. 한 번 더 실행하면 이미 예시가 있어서 건너뜁니다.
-7. 개발 서버를 끄고 다시 켭니다. PowerShell에서는 `npm.cmd run dev`입니다. 환경변수는 서버를 다시 켜야 반영됩니다.
+5. 왼쪽 **SQL Editor**에서 **New query**를 누르고 `supabase/schema_v2.sql` 내용 전부를 붙여 넣은 뒤 **Run**을 누릅니다. 이 스크립트는 예전 `cases`, `records` 테이블과 그 데이터를 지우고 `judgments` 테이블을 만듭니다.
+6. 개발 서버를 끄고 다시 켭니다. PowerShell에서는 `npm.cmd run dev`입니다. 환경변수는 서버를 다시 켜야 반영됩니다.
 
 키 목록 전체를 보려면 Dashboard의 **Settings > API Keys**로 갑니다. Settings > API라는 별도 메뉴는 없습니다.
 
@@ -69,4 +67,4 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY
 6. **Deploy**를 누릅니다. 배포가 끝나면 화면에 나온 주소로 엽니다.
 7. 변수를 빠뜨렸다면 프로젝트를 연 뒤 왼쪽 **Environment Variables**에서 같은 두 개를 넣고 Save합니다. 이미 만들어진 배포에는 적용되지 않으므로, Deployments에서 다시 배포합니다.
 
-Supabase의 Anonymous와 `schema.sql`, `seed.sql`은 배포 전에 끝나 있어야 합니다. Vercel에는 별도의 데이터베이스 비밀번호나 service role 키를 넣지 않습니다.
+Supabase의 Anonymous와 `schema_v2.sql`은 배포 전에 끝나 있어야 합니다. Vercel에는 별도의 데이터베이스 비밀번호나 service role 키를 넣지 않습니다.

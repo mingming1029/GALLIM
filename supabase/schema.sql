@@ -1,3 +1,4 @@
+-- 이 파일은 이전 구조입니다. 지금은 supabase/schema_v2.sql을 실행합니다.
 -- SQL Editor에서 한 번 실행합니다.
 -- service role 키는 이 파일과 앱 어디에도 넣지 않습니다.
 

@@ -7,8 +7,8 @@ export const metadata: Metadata = { title: "갈림 분석" };
 export default function AnalysisPage() {
   return (
     <Screen
-      title="점수와 결정이 갈린 곳"
-      lede="도구의 권고와 다르게 내린 판단이 어떤 이유에서 나왔는지 모아 봅니다. 예시 기록과 내 기록이 함께 집계됩니다."
+      title="채점과 판단이 갈린 곳"
+      lede="내가 고른 답과 사전 생성된 AI 채점이 어느 문항에서 달랐는지, 도구 수준과 다르게 판단한 이유가 무엇인지 모아 봅니다."
     >
       <AnalysisView />
     </Screen>
