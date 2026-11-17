@@ -4,8 +4,27 @@ import Link from "next/link";
 import { useState } from "react";
 import { CompareForm } from "@/components/compare-form";
 import { LevelBadge } from "@/components/level-badge";
-import { KORAS_ITEMS, MAX_SCORE, levelOf, totalOf } from "@/lib/koras";
+import { KORAS_ITEMS, MAX_SCORE, levelOf, totalOf, type DemoCase } from "@/lib/koras";
 import { useCaseRecord } from "@/lib/cases";
+
+function CaseRecordPanel({ item }: { item: DemoCase }) {
+  return (
+    <aside className="sticky top-0 z-10 max-h-[40vh] overflow-y-auto overscroll-contain rounded-[14px] border border-line bg-surface p-4 shadow-[0_10px_18px_-14px_rgba(28,25,22,0.45)] lg:top-4 lg:max-h-[calc(100dvh-2rem)] lg:p-5 lg:shadow-none">
+      <h2 className="text-base font-semibold">사건기록</h2>
+      <p className="mt-1 text-xs leading-5 text-muted">
+        사례 {item.id}. 채점하는 동안 이 기록을 함께 볼 수 있습니다.
+      </p>
+      <dl className="mt-3 flex flex-col gap-3">
+        {item.record.map((row) => (
+          <div key={row.label} className="min-w-0 border-b border-line pb-3 last:border-b-0 last:pb-0">
+            <dt className="text-xs font-bold text-muted">{row.label}</dt>
+            <dd className="mt-1 text-sm leading-6">{row.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </aside>
+  );
+}
 
 export function ScoreForm({ caseId }: { caseId: string }) {
   const item = useCaseRecord(caseId);
@@ -38,7 +57,7 @@ export function ScoreForm({ caseId }: { caseId: string }) {
   const complete = answered === KORAS_ITEMS.length;
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-5 px-4 py-6">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-6">
       <div className="flex flex-col gap-2">
         <span className="self-start rounded-full bg-accent-soft px-2.5 py-0.5 text-xs font-bold text-accent">
           채점
@@ -47,21 +66,27 @@ export function ScoreForm({ caseId }: { caseId: string }) {
           사례 {item.id} 채점
         </h1>
         <p className="text-sm leading-6 text-muted">
-          KORAS-G 17문항입니다. 만점 {MAX_SCORE}점, 0~6 낮음, 7~11 중간, 12 이상 높음.
+          KORAS-G 17문항입니다. 만점 {MAX_SCORE}점, 0~6 낮음, 7~11 중간, 12 이상 높음. 핸드폰에서는
+          사건기록이 위에, 넓은 화면에서는 옆에 남아 있습니다.
         </p>
       </div>
 
       {submitted ? (
-        <CompareForm item={item} scores={scores} />
+        <div className="grid items-start gap-5 lg:grid-cols-[minmax(16rem,22rem)_minmax(0,1fr)]">
+          <CaseRecordPanel item={item} />
+          <CompareForm item={item} scores={scores} />
+        </div>
       ) : (
         <form
           autoComplete="off"
-          className="flex flex-col gap-4"
+          className="grid items-start gap-4 lg:grid-cols-[minmax(16rem,22rem)_minmax(0,1fr)] lg:gap-5"
           onSubmit={(event) => {
             event.preventDefault();
             if (complete) setSubmitted(true);
           }}
         >
+          <CaseRecordPanel item={item} />
+          <div className="flex min-w-0 flex-col gap-4">
           {KORAS_ITEMS.map((question) => (
             <fieldset
               key={question.no}
@@ -100,7 +125,7 @@ export function ScoreForm({ caseId }: { caseId: string }) {
               </div>
             </fieldset>
           ))}
-          <div className="sticky bottom-0 flex flex-wrap items-center justify-between gap-3 rounded-[14px] border border-line bg-surface p-4">
+          <div className="sticky bottom-0 z-10 flex flex-wrap items-center justify-between gap-3 rounded-[14px] border border-line bg-surface p-4">
             <p className="flex flex-wrap items-baseline gap-2" aria-live="polite">
               <b className="text-4xl leading-none font-bold tabular-nums">{total}</b>
               <span className="text-sm text-muted">/ {MAX_SCORE}</span>
@@ -114,6 +139,7 @@ export function ScoreForm({ caseId }: { caseId: string }) {
             >
               채점 제출
             </button>
+          </div>
           </div>
         </form>
       )}
